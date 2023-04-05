@@ -53,3 +53,16 @@ let marvel =[
         releaseUs:'May 2015'
     }
 ];
+
+//GEtT request
+app.get ('/',(req, res) =>{
+    res.send ('Welcome to the superheroe universe!');
+});
+
+app.get('/movies', (req, res) =>{
+    res.json(marvel);
+});
+
+app.listen(8080, () =>{
+    console.log('Your app is listening on port 8080.');
+});
