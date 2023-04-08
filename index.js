@@ -1,5 +1,11 @@
 const express = require ('express');
+ const morgan = require ('morgan');
+ const fs = require('fs');
+ const path = require('path';)
+
 const app = express();
+
+app.arguments(morgan('common'));
 
 let marvel =[
     {
@@ -61,6 +67,15 @@ app.get ('/',(req, res) =>{
 
 app.get('/movies', (req, res) =>{
     res.json(marvel);
+});
+
+app.get('/documentation', (req, res)=>{
+res.sendFile('public/documentation.html', {root: _dirname});
+});
+
+app.arguments((err, req, res, next)=>{
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
 app.listen(8080, () =>{
