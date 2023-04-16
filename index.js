@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
+const mongoose = require('mongoose');
+const models = require('./models.js')
 const { unsafeStringify } = require('stringify');
 
 const app = express();
@@ -16,14 +18,50 @@ let users=[
     {
         id:'1',
         name:'Jane',
+        username:'jane1',
+        password:'favouritemovie1',
+        email:'janej@gmail.com',
+        birrthday:'1990-03-07',
         favouriteMovies:[]
 
     },
     {
         id:'2',
-        name:'John',
+        name:'Kokos',
+        username:'coconut',
+        password:'123coconut',
+        email:'iamkokos@gmail.com',
+        birthday:'1988-01-05',
         favouriteMovies:['Thor', 'Iron Man']
+    },
+    {
+        id:'3',
+        name:'Miso',
+        username:'misoon',
+        password:'ilovefood',
+        email:'miso@gmail.com',
+        birthday:'2010-07-03',
+        favouriteMovies:[]
+    },
+    {
+        id:'4',
+        name:'Marsik',
+        username:'mainecoon',
+        password:'coonsarethebest1',
+        email:'mars@gmail.com',
+        birthday:'1998-09-14',
+        favouriteMovies:[]
+    },
+    {
+        id:'5',
+        name:'Mochi',
+        username:'mochiball',
+        password:'rtj34f66',
+        email:'mochi@gmail.com',
+        birthday:'2004-07-07',
+        favouriteMovies:[]
     }
+    
 
 
 ];
@@ -158,7 +196,21 @@ let movies =[
             name: 'Marvel',
             description: 'The Marvel Cinematic Universe (MCU) is an American media franchise and shared universe centered on a series of superhero films produced by Marvel Studios.'
         }
+    },
+    {
+        title: 'Wonder Woman',
+        director:{
+            name:'Patricia Lea Jenkins',
+            bio:'is an American film director, screenwriter, and producer.',
+            birth: 'July 24, 1971'
+         },
+        releaseUs:'May 2017',
+        universe: {
+            name: 'DC',
+            description: 'is an American media franchise and shared universe centered on a series of superhero films and television series produced by DC Studios and distributed by Warner Bros. Pictures.'
+        }
     }
+
 ];
 
 
