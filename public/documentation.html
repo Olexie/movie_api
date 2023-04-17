@@ -57,7 +57,7 @@
 
         <tr>
             <td>Returns data (description, universe, director, image URL) about a single movie by title</td>
-            <td>/movies/:Title</td>
+            <td>/movies/:title</td>
             <td>GET</td>
             <td>N/A</td>
             <td>N/A</td>
@@ -90,11 +90,11 @@
             <td>A JSON object containing data about the user with the following structure <br>
                 {
                     <br>
-                    "Name": "Jane",
-                    "Username": "Jane",
-                    "Password": "mypassword243",
-                    "Email":"youremail@fmail.com",
-                    "Birthday": "1989-03-15",
+                    "name": "Jane",
+                    "username": "Jane",
+                    "password": "mypassword243",
+                    "email":"youremail@fmail.com",
+                    "birthday": "1989-03-15",
                     "favouriteMovies": []
                     <br>
                 }
@@ -113,7 +113,7 @@
 
         <tr>
             <td>Allows users to update their info </td>
-            <td>/users/:Username</td>
+            <td>/users/:username</td>
             <td>PUT</td>
             <td>Username</td>
             <td>N/A</td>
@@ -124,7 +124,7 @@
             <td>Allows user to add a movie to favourites</td>
             <td>/users/:Username/movies/:movieID</td>
             <td>POST</td>
-            <td>:Username/:movieID</td>
+            <td>:username/:movieID</td>
             <td>N/A</td>
             <td>A JSON object containing data about the user and that the movie was sucessfully added</td>
         </tr>
