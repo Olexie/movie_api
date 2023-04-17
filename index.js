@@ -20,6 +20,10 @@ app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+let auth = require("./auth")(app);
+const passport = require("passport");
+require("./passport");
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/my_movie_api")
   .catch((error) => handleError(error));
@@ -58,162 +62,206 @@ app.post("/users", (req, res) => {
 });
 
 // Get all users
-app.get("/users", (req, res) => {
-  Users.find() /* Querying users model and grabbing all data from users collection */
-    .then((users) => {
-      res.status(201).json(users);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/users",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Users.find() /* Querying users model and grabbing all data from users collection */
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 // Get information about a specific user by username
-app.get("/users/:Username", (req, res) => {
-  Users.findOne({ username: req.params.Username })
-    .then((users) => {
-      /* sending the response with user data back to the client */
-      res.json(users);
-    })
-    .catch((err) => {
-      /* error handling */
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/users/:Username",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Users.findOne({ username: req.params.Username })
+      .then((users) => {
+        /* sending the response with user data back to the client */
+        res.json(users);
+      })
+      .catch((err) => {
+        /* error handling */
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 // CREATE - Allow users to add a movie to their list of favorites
-app.post("/users/:Username/movies/:MovieID", (req, res) => {
-  const promise = Users.findOneAndUpdate(
-    { username: req.params.Username },
-    {
-      $push: {
-        favouriteMovies: req.params.MovieID,
+app.post(
+  "/users/:Username/movies/:MovieID",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const promise = Users.findOneAndUpdate(
+      { username: req.params.Username },
+      {
+        $push: {
+          favouriteMovies: req.params.MovieID,
+        },
       },
-    },
-    { new: true }
-  ).exec();
+      { new: true }
+    ).exec();
 
-  promise.then((updatedUser) => {
-    res.json(updatedUser);
-  });
-});
+    promise.then((updatedUser) => {
+      res.json(updatedUser);
+    });
+  }
+);
 
 // UPDATE User info
-app.put("/users/:Username", (req, res) => {
-  const promise = Users.findOneAndUpdate(
-    { username: req.params.Username },
-    {
-      $set: {
-        username: req.body.username,
-        name: req.body.name,
-        password: req.body.password,
-        email: req.body.email,
-        birthday: req.body.birthday,
+app.put(
+  "/users/:Username",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const promise = Users.findOneAndUpdate(
+      { username: req.params.Username },
+      {
+        $set: {
+          username: req.body.username,
+          name: req.body.name,
+          password: req.body.password,
+          email: req.body.email,
+          birthday: req.body.birthday,
+        },
       },
-    },
-    { new: true }
-  ) // This line makes sure that the updated document is returned
-    .exec();
+      { new: true }
+    ) // This line makes sure that the updated document is returned
+      .exec();
 
-  promise.then((updatedUser) => {
-    res.json(updatedUser);
-  });
-});
+    promise.then((updatedUser) => {
+      res.json(updatedUser);
+    });
+  }
+);
 
 // DELETE - Allow users to remove a movie from their list of favorites
-app.delete("/users/:Username/movies/:MovieID", (req, res) => {
-  const promise = Users.findOneAndUpdate(
-    { username: req.params.Username },
-    {
-      $pull: {
-        favouriteMovies: req.params.MovieID,
-      } /* using $pull to remove movieID from favorite movies array. */,
-    },
-    { new: true }
-  ) /* makes sure updated data is returned */
-    .exec();
+app.delete(
+  "/users/:Username/movies/:MovieID",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const promise = Users.findOneAndUpdate(
+      { username: req.params.Username },
+      {
+        $pull: {
+          favouriteMovies: req.params.MovieID,
+        } /* using $pull to remove movieID from favorite movies array. */,
+      },
+      { new: true }
+    ) /* makes sure updated data is returned */
+      .exec();
 
-  promise.then((updatedUser) => {
-    res.json(updatedUser);
-  });
-});
+    promise.then((updatedUser) => {
+      res.json(updatedUser);
+    });
+  }
+);
 
 // Delete a user by username
-app.delete("/users/:Username", (req, res) => {
-  const promise = Users.findOneAndRemove({
-    username: req.params.Username,
-  }).exec();
+app.delete(
+  "/users/:Username",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const promise = Users.findOneAndRemove({
+      username: req.params.Username,
+    }).exec();
 
-  promise.then((user) => {
-    /* checking if the document exists, if it does it gets deleted, if not it responds with was not found */
-    if (!user) {
-      res.status(400).send(req.params.Username + " was not found");
-    } else {
-      res.status(200).send(req.params.Username + " was deleted.");
-    }
-  });
-});
+    promise.then((user) => {
+      /* checking if the document exists, if it does it gets deleted, if not it responds with was not found */
+      if (!user) {
+        res.status(400).send(req.params.Username + " was not found");
+      } else {
+        res.status(200).send(req.params.Username + " was deleted.");
+      }
+    });
+  }
+);
 
 // READ - Get list of all movies
-app.get("/movies", (req, res) => {
-  Movies.find() /* Querying movies model and grabbing all data from movies collection */
-    .then((movies) => {
-      res.status(200).json(movies);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/movies",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Movies.find() /* Querying movies model and grabbing all data from movies collection */
+      .then((movies) => {
+        res.status(200).json(movies);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 // Find movie by title
-app.get("/movies/:Title", (req, res) => {
-  Movies.findOne({ title: req.params.Title })
-    .then((movies) => {
-      res.json(movies);
-    })
-    .catch((err) => {
-      /* error handling */
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/movies/:Title",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Movies.findOne({ title: req.params.Title })
+      .then((movies) => {
+        res.json(movies);
+      })
+      .catch((err) => {
+        /* error handling */
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 // Find movie by universe
-app.get("/movies/universe/:Universe", (req, res) => {
-  Movies.findOne({ "universe.name": req.params.Universe })
-    .then((movies) => {
-      res.json(movies.universe);
-    })
-    .catch((err) => {
-      /* error handling */
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/movies/universe/:Universe",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Movies.findOne({ "universe.name": req.params.Universe })
+      .then((movies) => {
+        res.json(movies.universe);
+      })
+      .catch((err) => {
+        /* error handling */
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 // Find data about director by name
-app.get("/movies/director/:DirectorName", (req, res) => {
-  Movies.findOne({ "director.name": req.params.DirectorName })
-    .then((movies) => {
-      res.json(movies.director);
-    })
-    .catch((err) => {
-      /* error handling */
-      console.error(err);
-      res.status(500).send("Error: " + err);
-    });
-});
+app.get(
+  "/movies/director/:DirectorName",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Movies.findOne({ "director.name": req.params.DirectorName })
+      .then((movies) => {
+        res.json(movies.director);
+      })
+      .catch((err) => {
+        /* error handling */
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
 //GET request
 app.get("/", (req, res) => {
   res.send("Welcome to the superheroe universe!");
 });
 
-app.get("/documentation", (req, res) => {
-  res.sendFile("public/documentation.html", { root: _dirname });
-});
+app.get(
+  "/documentation",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    res.sendFile("public/documentation.html", { root: _dirname });
+  }
+);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
