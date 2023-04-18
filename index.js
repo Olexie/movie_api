@@ -8,6 +8,8 @@ const mongoose = require("mongoose");
 const Models = require("./models.js");
 const { unsafeStringify } = require("stringify");
 
+const { check, validationResult } = require("express-validator");
+
 // Importing the models
 const Movies = Models.Movie;
 const Users = Models.User;
@@ -16,6 +18,11 @@ const Users = Models.User;
 
 const app = express();
 
+//cors
+const cors = require("cors");
+app.use(cors());
+
+//middleware
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -29,44 +36,64 @@ mongoose
   .catch((error) => handleError(error));
 
 //CREATE
-app.post("/users", (req, res) => {
-  Users.findOne({
-    username: req.body.username,
-  }) /* checking to see if the username already exists by querying the Users model */
-    .then((user) => {
-      if (user) {
-        return res.status(400).send(req.body.username + "already exists");
-      } else {
-        Users.create({
-          /* if user doesn't exist then Users.create mongoose' CREATE command is used to create the new user */
-          name: req.body.name,
-          username: req.body.username,
-          password: req.body.password,
-          email: req.body.email,
-          birthday: req.body.birthday,
-        })
-          .then((user) => {
-            res.status(201).json(user);
-          }) /* call back sending a response back to the client with the status code and the document "user", letting them know the transaction is completed */
-          .catch((error) => {
-            /* error handling */
-            console.error(error);
-            res.status(500).send("Error: " + error);
-          });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      res.status(500).send("Error: " + error);
-    });
-});
+app.post(
+  "/users",
+  [
+    check("username", "username is required").isLength({ min: 5 }),
+    check(
+      "username",
+      "username contains non alphanumeric characters - not allowed."
+    ).isAlphanumeric(),
+    check("password", "password is required").not().isEmpty(),
+    check("email", "email does not appear to be valid").isEmail(),
+  ],
+  (req, res) => {
+    // check the validation object for errors
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ errors: errors.array() });
+    }
+
+    let hashedPassword = Users.hashPassword(req.body.password);
+    Users.findOne({
+      username: req.body.username,
+    }) // checking to see if the username already exists by querying the Users model
+      .then((user) => {
+        if (user) {
+          return res.status(400).send(req.body.username + "already exists");
+        } else {
+          Users.create({
+            // if user doesn't exist then Users.create mongoose' CREATE command is used to create the new user
+            name: req.body.name,
+            username: req.body.username,
+            password: hashedPassword,
+            email: req.body.email,
+            birthday: req.body.birthday,
+          })
+            .then((user) => {
+              res.status(201).json(user);
+            }) // call back sending a response back to the client with the status code and the document "user", letting them know the transaction is completed
+            .catch((error) => {
+              // error handling
+              console.error(error);
+              res.status(500).send("Error: " + error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send("Error: " + error);
+      });
+  }
+);
 
 // Get all users
 app.get(
   "/users",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    Users.find() /* Querying users model and grabbing all data from users collection */
+    Users.find() // Querying users model and grabbing all data from users collection
       .then((users) => {
         res.status(201).json(users);
       })
@@ -119,15 +146,25 @@ app.post(
 // UPDATE User info
 app.put(
   "/users/:Username",
+  [
+    check("username", "username is required").isLength({ min: 5 }),
+    check(
+      "username",
+      "username contains non alphanumeric characters - not allowed."
+    ).isAlphanumeric(),
+    check("password", "password is required").not().isEmpty(),
+    check("email", "email does not appear to be valid").isEmail(),
+  ],
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
+    let hashedPassword = Users.hashPassword(req.body.password);
     const promise = Users.findOneAndUpdate(
       { username: req.params.Username },
       {
         $set: {
           username: req.body.username,
           name: req.body.name,
-          password: req.body.password,
+          password: hashedPassword,
           email: req.body.email,
           birthday: req.body.birthday,
         },
@@ -152,10 +189,10 @@ app.delete(
       {
         $pull: {
           favouriteMovies: req.params.MovieID,
-        } /* using $pull to remove movieID from favorite movies array. */,
+        }, //using $pull to remove movieID from favorite movies array.
       },
       { new: true }
-    ) /* makes sure updated data is returned */
+    ) // makes sure updated data is returned
       .exec();
 
     promise.then((updatedUser) => {
@@ -174,7 +211,7 @@ app.delete(
     }).exec();
 
     promise.then((user) => {
-      /* checking if the document exists, if it does it gets deleted, if not it responds with was not found */
+      // checking if the document exists, if it does it gets deleted, if not it responds with was not found
       if (!user) {
         res.status(400).send(req.params.Username + " was not found");
       } else {
@@ -268,6 +305,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-app.listen(8080, () => {
-  console.log("Your app is listening on port 8080.");
+const port = process.env.PORT || 8080;
+app.listen(port, "0.0.0.0", () => {
+  console.log("Listening on Port " + port);
 });
