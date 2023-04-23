@@ -32,7 +32,9 @@ const passport = require("passport");
 require("./passport");
 
 mongoose
-  .connect("mongodb://12.1.0.1:27017/my_movie_api")
+  .connect(
+    "mongodb+srv://alexa:5c4ODsub$&xsqDRW@mymoviedb.qox06uy.mongodb.net/my_movie_api?retryWrites=true&w=majority"
+  )
   .catch((error) => console.log(error));
 
 //CREATE
