@@ -32,8 +32,8 @@ const passport = require("passport");
 require("./passport");
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/my_movie_api")
-  .catch((error) => handleError(error));
+  .connect("mongodb://12.1.0.1:27017/my_movie_api")
+  .catch((error) => console.log(error));
 
 //CREATE
 app.post(
