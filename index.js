@@ -298,7 +298,7 @@ app.get(
 
 //GET request
 app.get("/", (req, res) => {
-  res.send("Welcome to the superheroe universe!");
+  res.send("Welcome to the superhero universe!");
 });
 
 app.get(
