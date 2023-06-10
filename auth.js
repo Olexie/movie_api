@@ -1,25 +1,26 @@
-const jwtSecret = "my_secret_key"; // This has to be the same key used in the JWT Strategy (in passports.js)
+const jwtSecret =
+  'my_secret_key'; /**This has to be the same key used in the JWT Strategy (in passports.js)*/
 
-const jwt = require("jsonwebtoken"),
-  passport = require("passport");
+const jwt = require('jsonwebtoken'),
+  passport = require('passport');
 
-require("./passport"); // Your local pssport file, checks is the user and pass exists then is creates a JWT below if it does
+require('./passport'); /**Your local pssport file, checks is the user and pass exists then is creates a JWT below if it does*/
 
 let generateJWTToken = (user) => {
   return jwt.sign(user, jwtSecret, {
     subject: user.username,
-    expiresIn: "1d",
-    algorithm: "HS256",
+    expiresIn: '1d',
+    algorithm: 'HS256',
   });
 };
-/* POST LOGIN */
+/**POST LOGIN */
 module.exports = (router) => {
-  router.post("/login", (req, res) => {
-    passport.authenticate("local", { session: false }, (error, user, info) => {
+  router.post('/login', (req, res) => {
+    passport.authenticate('local', { session: false }, (error, user, info) => {
       console.log({ error, user });
       if (error || !user) {
         return res.status(400).json({
-          message: "Something is not right",
+          message: 'Something is not right',
           user: user,
           error,
         });
