@@ -450,9 +450,9 @@ app.get('/', (req, res) => {
  */
 app.get(
   '/documentation',
-  passport.authenticate('jwt', { session: false }),
+  // passport.authenticate('jwt', { session: false }),
   (req, res) => {
-    res.sendFile('out/documentation.html', { root: _dirname });
+    res.sendFile('out/index.html', { root: _dirname });
   }
 );
 
